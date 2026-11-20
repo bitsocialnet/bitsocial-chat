@@ -2,13 +2,17 @@
   "name": "xmtp-recipient-backend-prototype",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "up": "docker compose up -d --wait",
     "down": "docker compose down -v",
     "demo": "node demo.mjs"
   },
   "dependencies": {
-    "@xmtp/node-sdk": "8.0.0-rc4"
+    "@pkcprotocol/pkc-js": "0.0.153",
+    "@xmtp/node-sdk": "8.0.0-rc4",
+    "ethers": "5.8.0"
   }
 }
