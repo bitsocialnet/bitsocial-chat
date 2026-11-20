@@ -19,7 +19,23 @@ On 2026-10-21 XMTP announced that it is now a messaging stack each app runs itse
 - **Encryption.** MLS for one-to-one and group chats, with forward secrecy and recovery after a key is compromised. NCC Group reviewed the MLS implementation in 2024. [Security](https://xmtp.org/protocol/security/)
 - **Spam.** Consent preferences let a user allow or block senders, and sync between that user's devices. [Consent](https://xmtp.org/sdk/consent/)
 
-**Not checked.** Which identity types the new SDKs accept, and whether a Bitsocial key can be one. How it behaves in a browser at Bitsocial's scale. How long an integration would take.
+**Not checked.** How it behaves in a browser at Bitsocial's scale. How long an integration would take.
+
+### Bitsocial Keys as XMTP Identities
+
+Not directly, but in practice yes. Read from the XMTP documentation and specs and from the bitsocial-react-hooks source on 2026-11-20. Nothing was run.
+
+- **What XMTP accepts.** An inbox is controlled by an Ethereum identity (an ordinary account signing ERC-191 text with a secp256k1 key, or a smart contract wallet) or by a P-256 passkey. Those are the only two kinds. Ed25519 appears only as the per-device installation key that XMTP generates itself.
+- **What Bitsocial uses.** An author signs with an Ed25519 key. That key cannot be registered as an XMTP identity.
+- **The bridge that already exists.** A Bitsocial private key is 32 bytes. Clients built on bitsocial-react-hooks already read the same 32 bytes as a secp256k1 key, derive an Ethereum address from it, and publish it as `author.wallets.eth` with a signature that ties it to the author's address ([`src/lib/chain/chain.ts`](https://github.com/bitsocialnet/bitsocial-react-hooks/blob/master/src/lib/chain/chain.ts)). XMTP's SDKs take exactly such bytes: `LocalSigningKey.fromBytes(bytes)` builds an Ethereum signer from a 32-byte private key with no wallet and no chain.
+- **So the flow would be:** the client passes the account's key bytes to the XMTP SDK and gets an inbox with no extra step for the user. A sender finds the recipient's XMTP identity by reading `author.wallets.eth` from the recipient's Bitsocial records and checking its signature.
+
+Caveats:
+
+- An account not created through bitsocial-react-hooks may have no `author.wallets.eth`.
+- pkc-js only checks the shape of `author.wallets`. Verifying the wallet's signature is the client's job, which the hooks do.
+- One secret is used on two curves. Bitsocial already does this, but a review of the private-message design should look at it.
+- Making Ed25519 a native XMTP identity kind is a different matter. XMTP's guide for [extending the identity model](https://xmtp.org/sdk/extend-identity-model/) lists changes to the protocol messages, the verifier and every SDK, and clients reject identity kinds they do not know. That would be a fork to maintain.
 
 ### No Federation
 
@@ -47,7 +63,7 @@ That leaves a different question: **could the XMTP stack be the mailbox?** A hos
   - **One backend for all of Bitsocial.** Simple, but a single operator holds every mailbox and nobody can exit to their own node.
   - **The sender connects to the recipient's backend.** Each host runs its own, and a client opens a separate XMTP client, with its own inbox and local database, for every backend it talks to. Nothing in the documentation rules this out or describes it. It needs a prototype.
   - **Use only the library.** Take the MIT-licensed MLS code from libxmtp and write Bitsocial's own delivery and storage. This keeps the audited cryptography and gives up the ready-made backend.
-- **Unknown:** whether a Bitsocial identity can be used directly, and how stable a stack is that changed direction this sharply within a year.
+- **Unknown:** how stable a stack is that changed direction this sharply within a year. Identity is not the obstacle: see [Bitsocial Keys as XMTP Identities](#bitsocial-keys-as-xmtp-identities).
 
 ## The Arguments That Still Stand
 

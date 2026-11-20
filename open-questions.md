@@ -15,7 +15,7 @@ Should private messages be new code on Bitsocial nodes, or an existing project s
 
 ### Can XMTP Be the Mailbox Without Federation
 
-Since October 2026 each XMTP backend is its own network, and backends do not exchange messages (see [research/existing-networks.md](research/existing-networks.md#no-federation)). The code is MIT-licensed. So users on different Bitsocial hosts could not message each other through it as it stands. Three ways around that are listed in the research note: one shared backend, a client that connects to each recipient's backend, or reusing only the encryption library. Which of these is acceptable, and does the second one work in practice? Also unknown: whether a Bitsocial key can be used as the XMTP identity.
+Since October 2026 each XMTP backend is its own network, and backends do not exchange messages (see [research/existing-networks.md](research/existing-networks.md#no-federation)). The code is MIT-licensed. So users on different Bitsocial hosts could not message each other through it as it stands. Three ways around that are listed in the research note: one shared backend, a client that connects to each recipient's backend, or reusing only the encryption library. Which of these is acceptable, and does the second one work in practice? Identity is not the obstacle: an account's key bytes already yield the Ethereum identity XMTP accepts.
 
 ### Is the Work Worth It
 
