@@ -2,7 +2,7 @@
 
 XMTP backends do not federate ([research note](../../research/existing-networks.md#no-federation)). This prototype tests one way around that: **the sender's client connects to the recipient's backend and delivers there.**
 
-**Result: it works.** Run on 2026-11-20 against two local backends (`ghcr.io/xmtp/backend:8.0.0-rc4`) with `@xmtp/node-sdk` 8.0.0-rc4, `@pkcprotocol/pkc-js` 0.0.153 and `ethers` 5.8.0 on Node 22. All fifteen checks passed on three runs.
+**Result: it works.** Run on 2026-11-20 against two local backends (`ghcr.io/xmtp/backend:8.0.0-rc4`) with `@xmtp/node-sdk` 8.0.0-rc4, `@pkcprotocol/pkc-js` 0.0.153 and `ethers` 5.8.0 on Node 22. All fifteen checks passed on three runs in Node, and on three runs [in a browser](#in-a-browser).
 
 ## What It Does
 
@@ -29,6 +29,18 @@ Alice learns Bob's XMTP identity only from his signed comment.
 | Bob replies, and Alice reads it through her host-B client | Works |
 | Alice looks for the conversation on host A | It is not there |
 
+## In a Browser
+
+The same fifteen checks, run inside one browser tab by [browser/main.js](browser/main.js) with `@xmtp/browser-sdk` 8.0.0-rc4 and the browser build of pkc-js. Run on 2026-11-20 in Chromium 156, served by the Vite dev server. All passed on three page loads.
+
+- **The backend takes browser clients as it is.** The page was on a different origin from both backends and needed no proxy and no extra backend setting.
+- **One tab held three XMTP clients at once**: Alice on host A, Alice on host B, and Bob on host B. Each got its own database in the browser's private file storage (OPFS), in a folder named after the backend's identifier.
+- **The page needs no special headers.** It was not cross-origin isolated.
+- **pkc-js made the keys and signed the comments in the browser**, the way it does in Seedit or 5chan.
+- **The download is large.** The XMTP library is a 3 MB WebAssembly file plus several megabytes of JavaScript before minifying. Sizes after a production build were not measured.
+
+Not covered in the browser: Firefox and Safari, a production build, a phone, two tabs open on the same account, and what happens to a conversation when the browser clears site storage. The browser SDK's storage options have no encryption key, unlike the Node SDK's, so the local database's protection at rest was not examined.
+
 ## What This Shows
 
 - A host can run its own XMTP backend, and users of other hosts can still message its users.
@@ -47,7 +59,6 @@ Alice learns Bob's XMTP identity only from his signed comment.
 
 ## What It Does Not Show
 
-- Browser clients. This used the Node SDK.
 - Group chats, attachments or push notifications.
 - A user with two devices.
 - Any load, or more than two backends.
@@ -81,3 +92,9 @@ docker compose down -v
 ```
 
 The script exits non-zero if any check fails. It deletes and recreates `./data` on each run.
+
+For the browser run, start the backends as above, then start the page and open `http://localhost:5180`. It runs on load and lists each check.
+
+```bash
+npm run browser
+```

@@ -8,11 +8,16 @@
   "scripts": {
     "up": "docker compose up -d --wait",
     "down": "docker compose down -v",
-    "demo": "node demo.mjs"
+    "demo": "node demo.mjs",
+    "browser": "vite browser"
   },
   "dependencies": {
     "@pkcprotocol/pkc-js": "0.0.153",
+    "@xmtp/browser-sdk": "8.0.0-rc4",
     "@xmtp/node-sdk": "8.0.0-rc4",
     "ethers": "5.8.0"
+  },
+  "devDependencies": {
+    "vite": "8.3.8"
   }
 }

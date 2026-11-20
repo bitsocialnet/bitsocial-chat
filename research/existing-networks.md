@@ -19,7 +19,7 @@ On 2026-10-21 XMTP announced that it is now a messaging stack each app runs itse
 - **Encryption.** MLS for one-to-one and group chats, with forward secrecy and recovery after a key is compromised. NCC Group reviewed the MLS implementation in 2024. [Security](https://xmtp.org/protocol/security/)
 - **Spam.** Consent preferences let a user allow or block senders, and sync between that user's devices. [Consent](https://xmtp.org/sdk/consent/)
 
-**Not checked.** How it behaves in a browser at Bitsocial's scale. How long an integration would take.
+**Not checked.** How it behaves at Bitsocial's scale. The [prototype](../prototypes/xmtp-recipient-backend/#in-a-browser) runs in a browser tab, in Chromium only. How long an integration would take.
 
 ### Bitsocial Keys as XMTP Identities
 
