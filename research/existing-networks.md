@@ -12,13 +12,26 @@ On 2026-10-21 XMTP announced that it is now a messaging stack each app runs itse
 
 - **The shared network is closing.** The hosted `dev` and `production` networks shut down on 2027-02-01. Messages do not carry over: a client starts with a fresh database on a self-hosted backend, with a one-time import for apps that stored messages.
 - **The backend is one program.** A single binary with PostgreSQL 17 or later for storage. It serves web and native clients on one port. [Run the backend](https://xmtp.org/get-started/run-the-backend/), [deployment overview](https://xmtp.org/deploy/overview/)
-- **Each backend is its own network.** A client is given one backend URL. The site says participants in a conversation need to be on the same backend. Whether two backends can exchange messages is not stated on the pages read.
+- **Each backend is its own network, and backends do not federate.** A client is given one backend URL, and its local database is bound to that backend's identifier. Participants in a conversation have to be on the same backend. See [No Federation](#no-federation) below.
+- **Licence.** MIT. The backend, the core library and the SDKs live in one repository, [xmtp/libxmtp](https://github.com/xmtp/libxmtp), whose `LICENSE` and Cargo workspace both say MIT.
 - **The operator sets the rules.** Rate limits, group size, retention (90 days by default for messages), optional sign-in by API key or token, and optional attachment storage.
 - **No token and no network fees.** The announcement says there is no token and will not be one. XMTP Labs says it will fund the project for two years while it moves to community ownership.
 - **Encryption.** MLS for one-to-one and group chats, with forward secrecy and recovery after a key is compromised. NCC Group reviewed the MLS implementation in 2024. [Security](https://xmtp.org/protocol/security/)
 - **Spam.** Consent preferences let a user allow or block senders, and sync between that user's devices. [Consent](https://xmtp.org/sdk/consent/)
 
-**Not checked.** The licence of the backend and SDKs. Whether backends can federate. Which identity types the new SDKs accept. How it behaves in a browser at Bitsocial's scale. How long an integration would take.
+**Not checked.** Which identity types the new SDKs accept, and whether a Bitsocial key can be one. How it behaves in a browser at Bitsocial's scale. How long an integration would take.
+
+### No Federation
+
+Two XMTP backends cannot exchange messages. This is a conclusion from the documentation, not a statement XMTP makes in those words:
+
+- The full developer guide and the protocol specs ([llms-full.txt](https://xmtp.org/llms-full.txt) and [llms-specs.txt](https://xmtp.org/llms-specs.txt), about 1.9 MB of text) do not contain the word "federate" or "federation", and describe no way for one backend to reach another.
+- Every example that connects two parties puts them on the same backend URL. The home page says all participants need an integration "on the same backend".
+- The client's local database is bound to one backend identifier. Connecting it to a backend with a different identifier is recorded as a conflict and stops it working.
+- The announcement describes the direction as many separate networks: "Instead of one network that we run, the plan is lots of them, run by the people building on them, all on the same open protocol."
+- A search of the repository's issues and code for federation found nothing relevant.
+
+"The same open protocol" here means any app can point at any backend, not that backends talk to each other. Apps interoperate by sharing a backend.
 
 ## What This Means for the Arguments
 
@@ -30,8 +43,11 @@ Two arguments from the earlier discussion no longer apply to XMTP:
 That leaves a different question: **could the XMTP stack be the mailbox?** A host would run the XMTP backend next to its Bitsocial node, and the chat library would use the XMTP SDKs instead of new code.
 
 - **For:** encryption, offline delivery, device sync, groups and consent are built, audited in part, and maintained by someone else. A small team would write an integration, not a messenger.
-- **Against, or unknown:** if backends cannot talk to each other, two users on different hosts cannot message. Then either all of Bitsocial shares one backend, which is a single operator, or the design needs a way for a client to reach the recipient's backend. This is the first thing to find out.
-- **Also unknown:** whether a Bitsocial identity can be used directly, what the licence allows, and how stable a stack is that changed direction this sharply within a year.
+- **Against:** backends do not federate, so two users on different hosts cannot message each other through it as it stands. That leaves three shapes, none of them free:
+  - **One backend for all of Bitsocial.** Simple, but a single operator holds every mailbox and nobody can exit to their own node.
+  - **The sender connects to the recipient's backend.** Each host runs its own, and a client opens a separate XMTP client, with its own inbox and local database, for every backend it talks to. Nothing in the documentation rules this out or describes it. It needs a prototype.
+  - **Use only the library.** Take the MIT-licensed MLS code from libxmtp and write Bitsocial's own delivery and storage. This keeps the audited cryptography and gives up the ready-made backend.
+- **Unknown:** whether a Bitsocial identity can be used directly, and how stable a stack is that changed direction this sharply within a year.
 
 ## The Arguments That Still Stand
 

@@ -13,9 +13,9 @@ Should private messages be new code on Bitsocial nodes, or an existing project s
 - An existing project as an interim client integration, with a defined way out, while the native layer is built.
 - No private messages. An `author.dmServices` field lists a user's accounts on other messengers and clients link out.
 
-### Can XMTP Backends Talk to Each Other
+### Can XMTP Be the Mailbox Without Federation
 
-Since October 2026 each XMTP backend is its own network. If two backends cannot exchange messages, users on different Bitsocial hosts could not message each other through it. This decides whether XMTP can be the mailbox at all. Also unknown: the licence, and whether a Bitsocial key can be used as the identity.
+Since October 2026 each XMTP backend is its own network, and backends do not exchange messages (see [research/existing-networks.md](research/existing-networks.md#no-federation)). The code is MIT-licensed. So users on different Bitsocial hosts could not message each other through it as it stands. Three ways around that are listed in the research note: one shared backend, a client that connects to each recipient's backend, or reusing only the encryption library. Which of these is acceptable, and does the second one work in practice? Also unknown: whether a Bitsocial key can be used as the XMTP identity.
 
 ### Is the Work Worth It
 
