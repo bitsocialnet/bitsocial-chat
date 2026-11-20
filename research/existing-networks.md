@@ -61,7 +61,7 @@ That leaves a different question: **could the XMTP stack be the mailbox?** A hos
 - **For:** encryption, offline delivery, device sync, groups and consent are built, audited in part, and maintained by someone else. A small team would write an integration, not a messenger.
 - **Against:** backends do not federate, so two users on different hosts cannot message each other through it as it stands. That leaves three shapes, none of them free:
   - **One backend for all of Bitsocial.** Simple, but a single operator holds every mailbox and nobody can exit to their own node.
-  - **The sender connects to the recipient's backend.** Each host runs its own, and a client opens a separate XMTP client, with its own inbox and local database, for every backend it talks to. Nothing in the documentation rules this out or describes it. It needs a prototype.
+  - **The sender connects to the recipient's backend.** Each host runs its own, and a client opens a separate XMTP client, with its own local database, for every backend it talks to. A [prototype](../prototypes/xmtp-recipient-backend/) shows this works: the same key gives the same inbox ID on both backends, and the message arrives as a request. The costs are that a conversation lives only on the recipient's backend, a host has to let strangers register, and a user who changes host leaves their conversations behind.
   - **Use only the library.** Take the MIT-licensed MLS code from libxmtp and write Bitsocial's own delivery and storage. This keeps the audited cryptography and gives up the ready-made backend.
 - **Unknown:** how stable a stack is that changed direction this sharply within a year. Identity is not the obstacle: see [Bitsocial Keys as XMTP Identities](#bitsocial-keys-as-xmtp-identities).
 

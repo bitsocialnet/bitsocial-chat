@@ -1,0 +1,65 @@
+# Two independent XMTP backends, standing in for two Bitsocial hosts.
+# Not for production: no authentication, fixed database passwords, no stored data.
+#
+#   docker compose up -d --wait   start both and wait until they are healthy
+#   docker compose down -v        stop both and delete their data
+#
+# Host A listens on http://127.0.0.1:5150, host B on http://127.0.0.1:5151.
+
+name: xmtp-recipient-backend-prototype
+
+x-db: &db
+  image: postgres:18.6
+  environment:
+    POSTGRES_USER: xmtp
+    POSTGRES_PASSWORD: xmtp
+    POSTGRES_DB: xmtp
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U xmtp -d xmtp"]
+    interval: 1s
+    timeout: 3s
+    retries: 30
+
+x-backend: &backend
+  image: ghcr.io/xmtp/backend:8.0.0-rc4
+  healthcheck:
+    test: ["CMD", "/bin/grpc-health-probe", "-addr=127.0.0.1:5050"]
+    interval: 1s
+    timeout: 5s
+    retries: 30
+
+services:
+  db-a:
+    <<: *db
+  db-b:
+    <<: *db
+
+  host-a:
+    <<: *backend
+    depends_on:
+      db-a:
+        condition: service_healthy
+    environment:
+      XMTP_DATABASE_URL: postgres://xmtp:xmtp@db-a:5432/xmtp
+      XMTP_CONFIG: |
+        [server]
+        identifier = "test.bitsocial.host-a"
+        [database]
+        url = "env:XMTP_DATABASE_URL"
+    ports:
+      - "127.0.0.1:5150:5050"
+
+  host-b:
+    <<: *backend
+    depends_on:
+      db-b:
+        condition: service_healthy
+    environment:
+      XMTP_DATABASE_URL: postgres://xmtp:xmtp@db-b:5432/xmtp
+      XMTP_CONFIG: |
+        [server]
+        identifier = "test.bitsocial.host-b"
+        [database]
+        url = "env:XMTP_DATABASE_URL"
+    ports:
+      - "127.0.0.1:5151:5050"

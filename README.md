@@ -50,7 +50,7 @@ This is the main open question, and both sides have real arguments. They are lai
 - **For reusing an existing project:** audited encryption, offline delivery and device sync already exist. A small team should not rebuild them.
 - **For a native layer:** every other part of Bitsocial can move between a hosted node, a competing host and a self-hosted node. A user's messages should move the same way, and one inbox should work in every Bitsocial app.
 
-The two may not conflict. In October 2026 XMTP became a stack that anyone runs themselves, with no shared network. A Bitsocial host could run it beside its node as the mailbox, and its code is MIT-licensed. The catch is that two such backends do not exchange messages, so users on different hosts could not reach each other without extra design.
+The two may not conflict. In October 2026 XMTP became a stack that anyone runs themselves, with no shared network. A Bitsocial host could run it beside its node as the mailbox, and its code is MIT-licensed. The catch is that two such backends do not exchange messages. A prototype shows a sender can connect to the recipient's backend instead, but then a user's conversations are tied to hosts and do not move with them.
 
 ## How to Help
 
@@ -67,6 +67,7 @@ Nothing is decided, so opinions and evidence are both useful. Open an issue if y
 - [open-questions.md](open-questions.md): decisions not yet made.
 - [research/pkc-js-surface.md](research/pkc-js-surface.md): what pkc-js exposes to a separate library today.
 - [research/existing-networks.md](research/existing-networks.md): XMTP, Matrix, SimpleX, Waku and others.
+- [prototypes/xmtp-recipient-backend](prototypes/xmtp-recipient-backend/): a working test of messaging between users of two separate XMTP backends.
 
 ## License
 
