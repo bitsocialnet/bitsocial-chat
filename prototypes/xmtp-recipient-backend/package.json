@@ -9,7 +9,9 @@
     "up": "docker compose up -d --wait",
     "down": "docker compose down -v",
     "demo": "node demo.mjs",
-    "browser": "vite browser"
+    "browser": "vite browser",
+    "browser:build": "vite build browser",
+    "browser:preview": "vite preview browser"
   },
   "dependencies": {
     "@pkcprotocol/pkc-js": "0.0.153",

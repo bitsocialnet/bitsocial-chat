@@ -31,15 +31,22 @@ Alice learns Bob's XMTP identity only from his signed comment.
 
 ## In a Browser
 
-The same fifteen checks, run inside one browser tab by [browser/main.js](browser/main.js) with `@xmtp/browser-sdk` 8.0.0-rc4 and the browser build of pkc-js. Run on 2026-11-20 in Chromium 156, served by the Vite dev server. All passed on three page loads.
+The same fifteen checks, run inside one browser tab by [browser/main.js](browser/main.js) with `@xmtp/browser-sdk` 8.0.0-rc4 and the browser build of pkc-js. Run in Chromium 156 on 2026-11-20 with the Vite dev server, and on 2026-11-21 with a production build (`vite build`) served by `vite preview` and by a plain static file server. All passed on every page load: three with the dev server, three with `vite preview` and one with the static server.
 
 - **The backend takes browser clients as it is.** The page was on a different origin from both backends and needed no proxy and no extra backend setting.
 - **One tab held three XMTP clients at once**: Alice on host A, Alice on host B, and Bob on host B. Each got its own database in the browser's private file storage (OPFS), in a folder named after the backend's identifier.
 - **The page needs no special headers.** It was not cross-origin isolated.
 - **pkc-js made the keys and signed the comments in the browser**, the way it does in Seedit or 5chan.
-- **The download is large.** The XMTP library is a 3 MB WebAssembly file plus several megabytes of JavaScript before minifying. Sizes after a production build were not measured.
+- **The download is large: about 5 MB compressed, almost all of it XMTP.** Measured on the production build, counting only the files the page and its worker requested:
 
-Not covered in the browser: Firefox and Safari, a production build, a phone, two tabs open on the same account, and what happens to a conversation when the browser clears site storage. The browser SDK's storage options have no encryption key, unlike the Node SDK's, so the local database's protection at rest was not examined.
+  | | Uncompressed | gzip, level 9 | Brotli, level 11 |
+  |---|---|---|---|
+  | The whole page | 47.5 MB | 8.6 MB | 5.2 MB |
+  | XMTP alone, from a build that only imports the SDK | 45.4 MB | 8.0 MB | 4.8 MB |
+
+  XMTP ships two WebAssembly files: a 40.7 MB one loaded by its worker and a 3.0 MB one loaded on the page. Of the 40.7 MB, 23.4 MB is the name section, which holds function names for debugging. Each file was fetched once although the tab opened three clients. This page loads XMTP as soon as it opens. An app could load it only when the user opens their messages, which was not tried. Whether the SDK still works with the name section removed was not tested.
+
+Not covered in the browser: Firefox and Safari, a phone, loading over a real network (everything was served from the same machine, so load time was not measured), two tabs open on the same account, and what happens to a conversation when the browser clears site storage. The browser SDK's storage options have no encryption key, unlike the Node SDK's, so the local database's protection at rest was not examined.
 
 ## What This Shows
 
@@ -97,4 +104,14 @@ For the browser run, start the backends as above, then start the page and open `
 
 ```bash
 npm run browser
+```
+
+For a production build, build the page and serve it, then open `http://localhost:5181`.
+
+```bash
+npm run browser:build
+```
+
+```bash
+npm run browser:preview
 ```
