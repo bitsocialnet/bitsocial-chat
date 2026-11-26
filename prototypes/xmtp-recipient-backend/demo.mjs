@@ -40,20 +40,24 @@ pkc.on("error", () => {});
 
 const fromBase64 = (text) => Uint8Array.from(Buffer.from(text, "base64"));
 
-// Same text and same signing as bitsocial-react-hooks, src/lib/chain/chain.ts
-// (getWalletMessageToSign, getEthWalletFromPkcPrivateKey, validateEthWallet), ethers 5.8.0.
-const walletMessage = (authorAddress, timestamp) =>
-  `{"domainSeparator":"pkc-author-wallet","authorAddress":"${authorAddress}","timestamp":${timestamp}}`;
+// The wallet proof BSIP-22 defines, which pkc-js 0.0.155 and later check before publishing and
+// communities check on acceptance. Same text and same signing as bitsocial-react-hooks 0.4,
+// src/lib/chain/author-wallet-proof.ts and chain.ts (getWalletMessageToSign,
+// getEthWalletFromPkcPrivateKey), ethers 5.8.0. `authorAddress` is the key address of the signing
+// key, never a name.
+const walletMessage = (authorAddress, walletAddress, timestamp) =>
+  `{"domainSeparator":"bitsocial-author-wallet","authorPublicKey":"${authorAddress}","walletAddress":"${walletAddress.toLowerCase()}","timestamp":${timestamp}}`;
 const ethWalletFromKey = async (keyBytes, authorAddress) => {
   const timestamp = Math.floor(Date.now() / 1000);
   const wallet = new ethers.Wallet(ethers.utils.hexlify(keyBytes));
-  const signature = await wallet.signMessage(walletMessage(authorAddress, timestamp));
+  const signature = await wallet.signMessage(walletMessage(authorAddress, wallet.address, timestamp));
   return { address: wallet.address, timestamp, signature: { signature, type: "eip191" } };
 };
+// BSIP-22 accepts a timestamp up to 300 seconds ahead of the verifier's clock.
 const walletIsValid = (wallet, authorAddress) =>
   wallet?.signature?.type === "eip191" &&
-  wallet.timestamp <= Date.now() / 1000 &&
-  ethers.utils.verifyMessage(walletMessage(authorAddress, wallet.timestamp), wallet.signature.signature).toLowerCase() ===
+  wallet.timestamp <= Date.now() / 1000 + 300 &&
+  ethers.utils.verifyMessage(walletMessage(authorAddress, wallet.address, wallet.timestamp), wallet.signature.signature).toLowerCase() ===
     wallet.address.toLowerCase();
 
 // A Bitsocial address is the libp2p peer ID of the author's Ed25519 public key.
