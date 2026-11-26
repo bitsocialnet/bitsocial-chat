@@ -14,7 +14,7 @@
     "browser:preview": "vite preview browser"
   },
   "dependencies": {
-    "@pkcprotocol/pkc-js": "0.0.153",
+    "@pkcprotocol/pkc-js": "0.0.163",
     "@xmtp/browser-sdk": "8.0.0-rc4",
     "@xmtp/node-sdk": "8.0.0-rc4",
     "ethers": "5.8.0"

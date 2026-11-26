@@ -4,6 +4,8 @@ XMTP backends do not federate ([research note](../../research/existing-networks.
 
 **Result: it works.** Run on 2026-11-20 against two local backends (`ghcr.io/xmtp/backend:8.0.0-rc4`) with `@xmtp/node-sdk` 8.0.0-rc4, `@pkcprotocol/pkc-js` 0.0.153 and `ethers` 5.8.0 on Node 22. All fifteen checks passed on three runs in Node, and on three runs [in a browser](#in-a-browser).
 
+On 2026-11-26 the prototype moved to pkc-js 0.0.163. Since 0.0.155, pkc-js rejects an `author.wallets` entry whose proof is not signed as [BSIP-22](https://github.com/bitsocialnet/BSIPs/blob/master/BSIPS/bsip-22.md) defines, so the wallet is now signed and checked that way, as bitsocial-react-hooks 0.4 does. The five checks that need no backend passed in Node and in the browser production build. The ten that need the backends were not run again.
+
 ## What It Does
 
 Two backends stand in for two Bitsocial hosts. Alice keeps her mailbox on host A, Bob on host B. Each account is a real Bitsocial account, made the way a client built on bitsocial-react-hooks makes one: pkc-js generates the key, `author.wallets.eth` is derived from the same 32 private-key bytes, and pkc-js signs a comment that carries it. That comment stands for any record of the author that another user can read. It is not published anywhere, and pkc-js contacts nothing.

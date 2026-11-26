@@ -37,19 +37,19 @@ const finish = (note) => {
 const fromBase64 = (text) => Uint8Array.from(atob(text.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
 const sameBytes = (a, b) => a.length === b.length && a.every((byte, index) => byte === b[index]);
 
-// Same text and same signing as bitsocial-react-hooks, src/lib/chain/chain.ts.
-const walletMessage = (authorAddress, timestamp) =>
-  `{"domainSeparator":"pkc-author-wallet","authorAddress":"${authorAddress}","timestamp":${timestamp}}`;
+// The BSIP-22 wallet proof, as in ../demo.mjs: same text and same signing as bitsocial-react-hooks 0.4.
+const walletMessage = (authorAddress, walletAddress, timestamp) =>
+  `{"domainSeparator":"bitsocial-author-wallet","authorPublicKey":"${authorAddress}","walletAddress":"${walletAddress.toLowerCase()}","timestamp":${timestamp}}`;
 const ethWalletFromKey = async (keyBytes, authorAddress) => {
   const timestamp = Math.floor(Date.now() / 1000);
   const wallet = new ethers.Wallet(ethers.utils.hexlify(keyBytes));
-  const signature = await wallet.signMessage(walletMessage(authorAddress, timestamp));
+  const signature = await wallet.signMessage(walletMessage(authorAddress, wallet.address, timestamp));
   return { address: wallet.address, timestamp, signature: { signature, type: "eip191" } };
 };
 const walletIsValid = (wallet, authorAddress) =>
   wallet?.signature?.type === "eip191" &&
-  wallet.timestamp <= Date.now() / 1000 &&
-  ethers.utils.verifyMessage(walletMessage(authorAddress, wallet.timestamp), wallet.signature.signature).toLowerCase() ===
+  wallet.timestamp <= Date.now() / 1000 + 300 &&
+  ethers.utils.verifyMessage(walletMessage(authorAddress, wallet.address, wallet.timestamp), wallet.signature.signature).toLowerCase() ===
     wallet.address.toLowerCase();
 
 const addressFromPublicKey = (publicKey) =>
